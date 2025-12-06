@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<base href="https://cdn.jsdelivr.net/gh/abisdbest/classroom.google.com@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/">
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Escape Road</title>
+<link rel="shortcut icon" href="icon.png">
+<link rel="stylesheet" href="TemplateData/style.css">
+<script src="yusuf.js"></script>
+<script>eruda.init()</script>
+
+<style>
+  @font-face {
+    font-family: myFirstFont;
+    src: url(Chainwhacks.otf);
+  }
+
+  body, #logo-canvas {
+    font-family: myFirstFont;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* Intro screen */
+  #intro-screen {
+    position: fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    background:black;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    flex-direction:column;
+  }
+
+  #intro-text {
+    color:#fad234;
+    font-family: myFirstFont;
+    font-size:60px;
+    opacity:0;
+    letter-spacing:3px;
+  }
+
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(0.8); }
+  }
+</style>
+</head>
+<body class="dark">
+
+<!-- Intro Screen -->
+<!-- Intro Screen -->
+<div id="intro-screen">
+  <div style="text-align:center;">
+    <h1 id="intro-text">Escape Road-made with Youssef Hussein</h1>
+    <div id="subtitle">
+      <span style="display:block; font-size:18px;">Made with</span>
+      <span style="display:block; font-size:24px; font-weight:bold;">Youssef Hussein</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- Unity Container -->
+<div id="unity-container" class="unity-desktop">
+  <p style="opacity:0; position:absolute;">_</p>
+  <canvas id="unity-canvas"></canvas>
+</div>
+
+<!-- Loading Cover -->
+<div id="loading-cover" style="display:none;background:black;">
+  <div id="unity-loading-bar">
+    <canvas id="logo-canvas" style="position:absolute; background-color:black;">
+      <img src="loading.png" id="ld_bg">
+      <img src="car-icon.png" id="ld_car">
+    </canvas>
+  </div>
+</div>
+
+<img id="azlogo" class="az" src="az_logo.png">
+
+<script>
+const container = document.querySelector("#unity-container");
+const canvas = document.querySelector("#unity-canvas");
+const loadingCover = document.querySelector("#loading-cover");
+
+const buildUrl = "TemplateData";
+const loaderUrl = buildUrl + "/loader.js";
+const config = {
+  dataUrl: buildUrl + "/data.unityweb",
+  frameworkUrl: buildUrl + "/framework.js.unityweb",
+  codeUrl: buildUrl + "/wasm.unityweb",
+  streamingAssetsUrl: "StreamingAssets",
+  companyName: "1games.io",
+  productName: "Escape Road",
+  productVersion: "2.0",
+};
+
+if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+  container.className = "unity-mobile";
+  config.devicePixelRatio = 1;
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function loadUnity() {
+  var az_logo = document.getElementById('azlogo');
+  az_logo.style.opacity = 0;
+  logo_loaded = true;
+  az_logo.style.display = 'none';
+  logo_loaded = false;
+  
+  createUnityInstance(canvas, config, (progress) => {
+    logo_loading_percent = progress;
+    drawCanvas(progress);
+  }).then((unityInstance) => {
+    window.unityInstance = unityInstance;
+    setTimeout(() => {
+      loadingCover.style.display = "none";
+      logo_loaded = true;
+      window.focus();
+    }, 2000);
+  }).catch((message) => { alert(message); });
+}
+
+function showIntro(duration = 3500) {
+  return new Promise(resolve => {
+    const introText = document.getElementById('intro-text');
+    introText.style.animation = `fadeInOut ${duration/1000}s ease-in-out`;
+    setTimeout(() => {
+      document.getElementById('intro-screen').style.display = 'none';
+      resolve();
+    }, duration);
+  });
+}
+
+async function init() {
+  // Fördröj Unity-laddningen tills introt är klart
+  await showIntro();
+  loadingCover.style.display = "";
+  // Ladda Unity
+  var script = document.createElement("script");
+  script.src = loaderUrl;
+  script.onload = () => { loadUnity(); };
+  document.body.appendChild(script);
+}
+
+init();
+
+/* Loading bar drawing */
+var logo_loaded = false;
+var logo_loading_percent = 0;
+var logo_canvas = document.getElementById("logo-canvas");
+
+function drawCanvas(_percent = 0) {
+  if (logo_loaded) return;
+  resizeLogoCanvas();
+  var ctx = logo_canvas.getContext("2d");
+  var ld_bg = document.getElementById("ld_bg");
+  var ld_car = document.getElementById("ld_car");
+  var _sw = logo_canvas.width / 1920;
+  var _sh = logo_canvas.height / 1080;
+  if (_percent > 1) _percent = 1;
+
+  ctx.drawImage(ld_bg, 0, 0, logo_canvas.width, logo_canvas.height);
+
+  ctx.fillStyle = "#977e21";
+  var _lw = 700;
+  var _lh = 50;
+  ctx.fillRect((1920 - _lw) * 0.5 * _sw, (1080 - 150) * _sh, _lw * _sw, _lh * _sh);
+
+  ctx.fillStyle = "#fad234";
+  var _pad = 5;
+  var _pw = (_lw - _pad * 2);
+  var _ph = _lh - _pad * 2;
+  var _px = (1920 - _pw) * 0.5;
+  ctx.fillRect(_px * _sw, (1080 - 150 + _pad) * _sh, _pw * _percent * _sw, _ph * _sh);
+
+  var _car_x = _px + _pw * _percent - 100;
+  if (_car_x < _px) _car_x = _px;
+  //ctx.drawImage(ld_car, _car_x * _sw, (1080 - 190) * _sh, 100 * _sw, 42 * _sh);
+
+  ctx.font = "18px myFirstFont";
+  ctx.font = ctx.font.replace(/\d+px/, 35 * _sh + "px");
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#fff";
+  ctx.shadowColor = "black";
+  ctx.shadowOffsetY = 2;
+  ctx.fillText(Math.floor(_percent*100) + "%", logo_canvas.width/2, logo_canvas.height/2 + _sh*425);
+}
+
+function resizeLogoCanvas() {
+  var _w = window.innerWidth;
+  var _h = window.innerHeight;
+  var _nw = _h * 16/9;
+  if (_nw <= _w) {
+    logo_canvas.width = _nw;
+    logo_canvas.height = _h;
+  } else {
+    logo_canvas.width = _w;
+    logo_canvas.height = _w * 9/16;
+  }
+}
+
+window.onresize = () => drawCanvas(logo_loading_percent);
+window.onload = () => drawCanvas(logo_loading_percent);
+
+</script>
+
+<!-- Firebase scripts -->
+<script src="yusuffanpage.js"></script>
+<script src="yusuffanpage1.js"></script>
+<script src="yusuffanpage2.js"></script>
+<script src="yusuffanpage3.js"></script>
+<script type="module">
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-analytics.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC2RwMfh0GMuQMtQdijjUo-MEffB4N9xVY",
+  authDomain: "escape-road-gm1.firebaseapp.com",
+  projectId: "escape-road-gm1",
+  storageBucket: "escape-road-gm1.appspot.com",
+  messagingSenderId: "713881704715",
+  appId: "1:713881704715:web:615cc93a73d9814b24ea0e",
+  measurementId: "G-E8C3TNJE0S"
+};
+
+const app = firebase.initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const analytics = getAnalytics(app);
+
+window.dataLayer = window.dataLayer || [];
+window.gtag = function(){dataLayer.push(arguments);}
+window.gtag("config", firebaseConfig.measurementId, { cookie_domain: location.hostname, cookie_flags: "SameSite=None;Secure" });
+</script>
+
+<script src="rocket-loader.min.js" defer></script>
+</body>
+</html>
